@@ -5,11 +5,13 @@
       <button v-on:click="storeAuthToken">Store auth token</button>
     </div>
     <div v-if="isLoading">Loading...</div>
+    <div ref="gameContainer" id="js-gameContainer"></div>
   </div>
 </template>
 
 <script>
 import wretch from "wretch";
+import {jumbogrove} from "jumbogrove";
 
 let api = null;
 
@@ -23,7 +25,7 @@ function beginLoad(onComplete) {
     .url("https://app.asana.com/api/1.0/")
     .auth(`Bearer ${ localStorage.authToken }`);
 
-  api.url(`projects/${Constants.projectID}/tasks?opt_fields=name,custom_fields&opt_expand=custom_fields`).get().json((result) => {
+  api.url(`projects/${Constants.projectID}/tasks?opt_fields=name,custom_fields,html_notes&opt_expand=custom_fields`).get().json((result) => {
     console.log("Tasks:", result);
     const situationData = result.data.map(taskToSituation);
     console.log("Situations:", situationData);
@@ -36,6 +38,7 @@ function beginLoad(onComplete) {
 function taskToSituation(task) {
   const result = {
     id: task.name,
+    content: parseHTML(task.html_notes),
   };
   for (let field of task.custom_fields) {
     if (field.name.indexOf("jg_") === 0) {
@@ -47,7 +50,20 @@ function taskToSituation(task) {
       }
     }
   }
+
+  if (result.choices) {
+    result.choices = result.choices.split(' ');
+  }
+
+  if (result.tags) {
+    result.tags = result.tags.split(' ');
+  }
+
   return result;
+}
+
+function parseHTML(html) {
+  return html.replace("<body>", "").replace("</body>", "");
 }
 
 export default {
@@ -55,9 +71,7 @@ export default {
   created: function() {
     if (localStorage.authToken) {
       this.isLoading = true;
-      beginLoad(() => {
-        this.play();
-      });
+      beginLoad(this.play.bind(this));
     }
   },
   data() {
@@ -72,23 +86,20 @@ export default {
       localStorage.authToken = this.authToken;
       this.authToken = "";
       this.isLoading = true;
-      beginLoad(() => {
-        this.play()
-      });
+      beginLoad(this.play.bind(this));
     },
-    play() {
+    play(situationData) {
       this.hasLoaded = true;
       this.isLoading = false;
-      console.log("play", arguments);
+      jumbogrove('#' + this.$refs.gameContainer.id, {
+        id: 'asana-the-game',
+        showAside: false,
+        situations: situationData,
+      });
     },
   },
 };
 </script>
 
 <style scoped>
-  .container {
-    /* width: 600px;
-    margin: 50px auto;
-    text-align: center; */
-  }
 </style>
