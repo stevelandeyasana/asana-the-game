@@ -1,0 +1,23 @@
+{
+  "name": "asana-game",
+  "version": "0.1.0",
+  "main": "index.js",
+  "author": "Steve Landey <stevelandey@asana.com>",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "dev": "parcel src/index.html",
+    "watch": "parcel watch index.html",
+    "production": "parcel build index.html"
+  },
+  "devDependencies": {
+    "@vue/component-compiler-utils": "^2.3.0",
+    "parcel-bundler": "^1.10.3",
+    "vue-template-compiler": "^2.5.17"
+  },
+  "dependencies": {
+    "vue": "^2.5.17",
+    "vue-hot-reload-api": "^2.3.1",
+    "wretch": "^1.4.2"
+  }
+}
