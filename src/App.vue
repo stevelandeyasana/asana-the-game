@@ -1,7 +1,10 @@
 <template>
   <div class="container">
-    <input type="text" v-model="authToken" placeholder="your auth token">
-    <button v-on:click="storeAuthToken">Store auth token</button>
+    <div v-if="!hasLoaded">
+      <input type="text" v-model="authToken" placeholder="your auth token">
+      <button v-on:click="storeAuthToken">Store auth token</button>
+    </div>
+    <div v-if="isLoading">Loading...</div>
   </div>
 </template>
 
@@ -15,7 +18,7 @@ const Constants = {
   projectID: "916537440743762",
 };
 
-function beginLoad() {
+function beginLoad(onComplete) {
   api = wretch()
     .url("https://app.asana.com/api/1.0/")
     .auth(`Bearer ${ localStorage.authToken }`);
@@ -24,6 +27,9 @@ function beginLoad() {
     console.log("Tasks:", result);
     const situationData = result.data.map(taskToSituation);
     console.log("Situations:", situationData);
+    if (onComplete) {
+      onComplete(situationData);
+    }
   });
 }
 
@@ -48,21 +54,34 @@ export default {
   name: 'App',
   created: function() {
     if (localStorage.authToken) {
-      beginLoad();
+      this.isLoading = true;
+      beginLoad(() => {
+        this.play();
+      });
     }
   },
   data() {
     return {
       authToken: "",
+      isLoading: false,
+      hasLoaded: false,
     };
   },
   methods: {
     storeAuthToken() {
       localStorage.authToken = this.authToken;
       this.authToken = "";
-      beginLoad();
-    }
-  }
+      this.isLoading = true;
+      beginLoad(() => {
+        this.play()
+      });
+    },
+    play() {
+      this.hasLoaded = true;
+      this.isLoading = false;
+      console.log("play", arguments);
+    },
+  },
 };
 </script>
 
