@@ -25,7 +25,7 @@ function beginLoad(onComplete) {
     .url("https://app.asana.com/api/1.0/")
     .auth(`Bearer ${ localStorage.authToken }`);
 
-  api.url(`projects/${Constants.projectID}/tasks?opt_fields=name,custom_fields,html_notes&opt_expand=custom_fields`).get().json((result) => {
+  api.url(`projects/${Constants.projectID}/tasks?opt_fields=name,custom_fields,html_notes,attachments&opt_expand=custom_fields,attachments`).get().json((result) => {
     console.log("Tasks:", result);
     const situationData = result.data.map(taskToSituation);
     console.log("Situations:", situationData);
@@ -34,6 +34,8 @@ function beginLoad(onComplete) {
     }
   });
 }
+
+const attachmentIndex = {};
 
 function taskToSituation(task) {
   const result = {
@@ -59,8 +61,8 @@ function taskToSituation(task) {
     result.tags = result.tags.split(',').map((c) => c.trim());
   }
 
-  result.willEnter = (model, ui, fromSituation) => {
-    console.log(result);
+  result.enter = (model, ui, fromSituation) => {
+    model.globalState[`visitedScenes.${result.id}`] = true;
     if (result.set) {
       for (let item of result.set.split(',')) {
         model.globalState[item.trim()] = true;
@@ -71,21 +73,49 @@ function taskToSituation(task) {
         model.globalState[item.trim()] = false;
       }
     }
+
+    task.attachments.forEach(({id}) => {
+      if (attachmentIndex[id]) {
+        ui.writeHTML(`<img id="image-${id}" src="${attachmentIndex[id]}">`);
+      } else {
+        ui.writeHTML(`<img id="image-${id}" style="display: none;">`);
+      }
+    });
+
     return true;
   };
 
   result.getCanSee = (model, hostSituation) => {
     if (result.require) {
-      if (result.require[0] == "!") {
-        return !(model.globalState[result.require.slice(1)] || false);
-      } else {
-        return model.globalState[result.require] || false;
+      for (let item of result.require.split(',')) {
+        const k = item.trim();
+        if (result.require[0] == "!") {
+          k = k.slice(1);
+          if ((model.globalState[k] || false)) { return false }
+        } else if (!(model.globalState[k] || false)) {
+          return false;
+        }
       }
     }
     return true;
   };
 
+  task.attachments.forEach(({id}) => loadAttachment(id));
+
   return result;
+}
+
+function loadAttachment(id) {
+  api.url(`attachments/${id}`).get().json((result) => {
+    const url = result.data.download_url;
+    const image = new Image();
+    image.src = url;
+    attachmentIndex[id] = url;
+    for (let el of document.querySelectorAll(`#image-${id}`)) {
+      el.src = url;
+      el.style.display = 'inline';
+    }
+  });
 }
 
 function parseHTML(html) {
