@@ -65069,7 +65069,7 @@ var Constants = {
 
 function beginLoad(onComplete) {
   api = (0, _wretch.default)().url("https://app.asana.com/api/1.0/").auth("Bearer ".concat(localStorage.authToken));
-  api.url("projects/".concat(Constants.projectID, "/tasks?opt_fields=name,custom_fields,html_notes&opt_expand=custom_fields")).get().json(function (result) {
+  api.url("projects/".concat(Constants.projectID, "/tasks?opt_fields=name,custom_fields,html_notes,attachments&opt_expand=custom_fields,attachments")).get().json(function (result) {
     console.log("Tasks:", result);
     var situationData = result.data.map(taskToSituation);
     console.log("Situations:", situationData);
@@ -65079,6 +65079,8 @@ function beginLoad(onComplete) {
     }
   });
 }
+
+var attachmentIndex = {};
 
 function taskToSituation(task) {
   var result = {
@@ -65130,8 +65132,8 @@ function taskToSituation(task) {
     });
   }
 
-  result.willEnter = function (model, ui, fromSituation) {
-    console.log(result);
+  result.enter = function (model, ui, fromSituation) {
+    model.globalState["visitedScenes.".concat(result.id)] = true;
 
     if (result.set) {
       var _iteratorNormalCompletion2 = true;
@@ -65185,22 +65187,96 @@ function taskToSituation(task) {
       }
     }
 
+    task.attachments.forEach(function (_ref) {
+      var id = _ref.id;
+
+      if (attachmentIndex[id]) {
+        ui.writeHTML("<img id=\"image-".concat(id, "\" src=\"").concat(attachmentIndex[id], "\">"));
+      } else {
+        ui.writeHTML("<img id=\"image-".concat(id, "\" style=\"display: none;\">"));
+      }
+    });
     return true;
   };
 
   result.getCanSee = function (model, hostSituation) {
     if (result.require) {
-      if (result.require[0] == "!") {
-        return !(model.globalState[result.require.slice(1)] || false);
-      } else {
-        return model.globalState[result.require] || false;
+      var _iteratorNormalCompletion4 = true;
+      var _didIteratorError4 = false;
+      var _iteratorError4 = undefined;
+
+      try {
+        for (var _iterator4 = result.require.split(',')[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+          var item = _step4.value;
+          var k = item.trim();
+
+          if (result.require[0] == "!") {
+            k = k.slice(1);
+
+            if (model.globalState[k] || false) {
+              return false;
+            }
+          } else if (!(model.globalState[k] || false)) {
+            return false;
+          }
+        }
+      } catch (err) {
+        _didIteratorError4 = true;
+        _iteratorError4 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion4 && _iterator4.return != null) {
+            _iterator4.return();
+          }
+        } finally {
+          if (_didIteratorError4) {
+            throw _iteratorError4;
+          }
+        }
       }
     }
 
     return true;
   };
 
+  task.attachments.forEach(function (_ref2) {
+    var id = _ref2.id;
+    return loadAttachment(id);
+  });
   return result;
+}
+
+function loadAttachment(id) {
+  api.url("attachments/".concat(id)).get().json(function (result) {
+    var url = result.data.download_url;
+    var image = new Image();
+    image.src = url;
+    attachmentIndex[id] = url;
+    var _iteratorNormalCompletion5 = true;
+    var _didIteratorError5 = false;
+    var _iteratorError5 = undefined;
+
+    try {
+      for (var _iterator5 = document.querySelectorAll("#image-".concat(id))[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+        var el = _step5.value;
+        el.src = url;
+        el.style.display = 'inline';
+      }
+    } catch (err) {
+      _didIteratorError5 = true;
+      _iteratorError5 = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion5 && _iterator5.return != null) {
+          _iterator5.return();
+        }
+      } finally {
+        if (_didIteratorError5) {
+          throw _iteratorError5;
+        }
+      }
+    }
+  });
 }
 
 function parseHTML(html) {
@@ -65363,7 +65439,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "64983" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "65402" + '/');
 
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
