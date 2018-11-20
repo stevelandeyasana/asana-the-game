@@ -52,12 +52,38 @@ function taskToSituation(task) {
   }
 
   if (result.choices) {
-    result.choices = result.choices.split(' ');
+    result.choices = result.choices.split(',').map((c) => c.trim());
   }
 
   if (result.tags) {
-    result.tags = result.tags.split(' ');
+    result.tags = result.tags.split(',').map((c) => c.trim());
   }
+
+  result.willEnter = (model, ui, fromSituation) => {
+    console.log(result);
+    if (result.set) {
+      for (let item of result.set.split(',')) {
+        model.globalState[item.trim()] = true;
+      }
+    }
+    if (result.unset) {
+      for (let item of result.unset.split(',')) {
+        model.globalState[item.trim()] = false;
+      }
+    }
+    return true;
+  };
+
+  result.getCanSee = (model, hostSituation) => {
+    if (result.require) {
+      if (result.require[0] == "!") {
+        return !(model.globalState[result.require.slice(1)] || false);
+      } else {
+        return model.globalState[result.require] || false;
+      }
+    }
+    return true;
+  };
 
   return result;
 }
