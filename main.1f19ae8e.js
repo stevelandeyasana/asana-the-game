@@ -68070,6 +68070,13 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
 var api = null;
 var Constants = {
   workspaceID: "15793206719",
@@ -68365,6 +68372,31 @@ exports.default = _default;
   return _c("div", { staticClass: "container" }, [
     !_vm.hasLoaded
       ? _c("div", [
+          _c(
+            "p",
+            [
+              _vm._v(
+                "\n      Please enter an Asana personal access token. It will be stored in\n      "
+              ),
+              _c("tt", [_vm._v("localStorage")]),
+              _vm._v(" in your browser. "),
+              _c("b", [
+                _vm._v(
+                  "You probably want to do this in an\n      Incognito window."
+                )
+              ])
+            ],
+            1
+          ),
+          _c("p"),
+          _c("p", [
+            _vm._v(
+              "The token is needed to fetch the tasks from a special Asana project."
+            )
+          ]),
+          _vm._v(" "),
+          _vm._m(0),
+          _vm._v(" "),
           _c("input", {
             directives: [
               {
@@ -68387,7 +68419,7 @@ exports.default = _default;
           }),
           _vm._v(" "),
           _c("button", { on: { click: _vm.storeAuthToken } }, [
-            _vm._v("Store auth token")
+            _vm._v("Store access token")
           ])
         ])
       : _vm._e(),
@@ -68397,7 +68429,18 @@ exports.default = _default;
     _c("div", { ref: "gameContainer", attrs: { id: "js-gameContainer" } })
   ])
 }
-var staticRenderFns = []
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("p", [
+      _c("a", { attrs: { href: "https://asana.com/guide/help/api/api" } }, [
+        _vm._v("Learn how to create a personal access token")
+      ])
+    ])
+  }
+]
 render._withStripped = true
 
           return {
@@ -68472,7 +68515,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "63197" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "52336" + '/');
 
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
