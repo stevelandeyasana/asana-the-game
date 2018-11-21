@@ -1,8 +1,15 @@
 <template>
   <div class="container">
     <div v-if="!hasLoaded">
+      <p>
+        Please enter an Asana personal access token. It will be stored in
+        <tt>localStorage</tt> in your browser. <b>You probably want to do this in an
+        Incognito window.</b>
+      <p>
+      <p>The token is needed to fetch the tasks from a special Asana project.</p>
+      <p><a href="https://asana.com/guide/help/api/api">Learn how to create a personal access token</a></p>
       <input type="text" v-model="authToken" placeholder="your auth token">
-      <button v-on:click="storeAuthToken">Store auth token</button>
+      <button v-on:click="storeAuthToken">Store access token</button>
     </div>
     <div v-if="isLoading">Loading...</div>
     <div ref="gameContainer" id="js-gameContainer"></div>
