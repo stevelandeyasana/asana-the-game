@@ -8,7 +8,7 @@
       <p>
       <p>The token is needed to fetch the tasks from a special Asana project.</p>
       <p><a href="https://asana.com/guide/help/api/api">Learn how to create a personal access token</a></p>
-      <input type="text" v-model="authToken" placeholder="your auth token">
+      <input type="text" v-model="authToken" placeholder="your personal access token">
       <button v-on:click="storeAuthToken">Store access token</button>
     </div>
     <div v-if="isLoading">Loading...</div>
