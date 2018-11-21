@@ -12,6 +12,7 @@
 <script>
 import wretch from "wretch";
 import {jumbogrove} from "jumbogrove";
+import {Howl, Howler} from 'howler';
 
 let api = null;
 
@@ -36,6 +37,8 @@ function beginLoad(onComplete) {
 }
 
 const attachmentIndex = {};
+const musicIndex = {};
+window.musicIndex = musicIndex;
 
 function taskToSituation(task) {
   const result = {
@@ -61,6 +64,14 @@ function taskToSituation(task) {
     result.tags = result.tags.split(',').map((c) => c.trim());
   }
 
+  if (result.music && result.music !== "no music") {
+    musicIndex[result.music] = new Howl({
+      src: [result.music + '.mp3'],
+      loop: true,
+      // volume: 0.5,
+    });
+  }
+
   result.enter = (model, ui, fromSituation) => {
     model.globalState[`visitedScenes.${result.id}`] = true;
     if (result.set) {
@@ -72,6 +83,15 @@ function taskToSituation(task) {
       for (let item of result.unset.split(',')) {
         model.globalState[item.trim()] = false;
       }
+    }
+    if (result.music && model.globalState.music != result.music) {
+      for (let k of Object.keys(musicIndex)) {
+        musicIndex[k].stop();
+      }
+      model.globalState.music = result.music;
+      if (result.music == "no music") return;
+      console.log("play", result.music);
+      musicIndex[result.music].play();
     }
 
     task.attachments.forEach(({id}) => {

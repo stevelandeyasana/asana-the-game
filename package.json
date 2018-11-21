@@ -17,6 +17,7 @@
     "vue-template-compiler": "^2.5.17"
   },
   "dependencies": {
+    "howler": "^2.0.15",
     "jumbogrove": "link:../../3p/jumbogrove",
     "vue": "^2.5.17",
     "vue-hot-reload-api": "^2.3.1",
